@@ -1,0 +1,25 @@
+{
+  "name": "Cahier de texte IBSA",
+  "short_name": "IBSA",
+  "description": "International Bilingual School of Africa - Cahier de texte numérique",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0D2B55",
+  "theme_color": "#0D2B55",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
