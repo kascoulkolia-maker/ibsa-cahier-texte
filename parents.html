@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Espace Parents — IBSA — Documents à télécharger">
+<meta name="theme-color" content="#0D2B55">
+<title>Espace Parents — IBSA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<style>
+:root {
+  --primary: #0D2B55;
+  --primary-light: #1A4480;
+  --accent: #D4930A;
+  --accent-light: #F0B429;
+  --success: #166534;
+  --bg: #F1F5FB;
+  --card: #FFFFFF;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --text-muted: #475569;
+  --shadow: 0 4px 20px rgba(13,43,85,0.10);
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #0d2137 0%, #1a3a5c 50%, #2a5a8c 100%);
+  padding: 24px 20px;
+  text-align: center;
+  color: white;
+}
+.header-logo {
+  width: 80px; height: 80px; border-radius: 50%;
+  border: 3px solid var(--accent); object-fit: contain;
+  background: white; padding: 6px;
+  box-shadow: 0 0 0 3px white, 0 0 0 5px var(--accent);
+  margin-bottom: 14px;
+}
+.header h1 { font-family: 'Playfair Display', serif; font-size: 20px; line-height: 1.3; }
+.header .classe-badge {
+  display: inline-block; margin-top: 10px;
+  background: rgba(212,147,10,0.25); border: 1px solid var(--accent);
+  color: var(--accent-light); padding: 5px 18px; border-radius: 20px;
+  font-size: 15px; font-weight: 700; letter-spacing: 0.5px;
+}
+.header p { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 6px; }
+
+/* CONTAINER */
+.container { max-width: 680px; margin: 0 auto; padding: 24px 16px 60px; }
+
+/* ÉTAT VIDE / LOADING */
+.state-box {
+  text-align: center; padding: 60px 20px;
+  color: var(--text-muted); font-size: 15px;
+}
+.state-box .icon { font-size: 48px; margin-bottom: 14px; }
+.state-box h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; font-family: 'Playfair Display', serif; }
+
+/* SECTION PAR DATE */
+.section-date {
+  margin-bottom: 22px;
+}
+.section-date-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px; padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+}
+.section-date-header .matiere {
+  font-weight: 700; color: var(--primary); font-size: 15px;
+}
+.section-date-header .date {
+  font-size: 12px; color: var(--text-muted);
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 3px 10px; border-radius: 20px;
+  margin-left: auto;
+}
+
+/* FICHIER CARD */
+.file-card {
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 14px 16px;
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 8px; transition: box-shadow 0.2s;
+}
+.file-card:hover { box-shadow: var(--shadow); }
+.file-icon { font-size: 30px; flex-shrink: 0; }
+.file-info { flex: 1; min-width: 0; }
+.file-name {
+  font-weight: 600; font-size: 14px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.file-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.btn-download {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border: none; border-radius: 8px;
+  background: var(--primary); color: white;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; text-decoration: none; flex-shrink: 0;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-download:hover { background: var(--primary-light); }
+.btn-download:active { transform: scale(0.97); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: var(--primary); color: white;
+  padding: 12px 20px; border-radius: 10px;
+  font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  opacity: 0; transition: opacity 0.3s; z-index: 999;
+  max-width: 300px;
+}
+.toast.show { opacity: 1; }
+
+/* FOOTER */
+.footer {
+  text-align: center; padding: 20px;
+  font-size: 12px; color: var(--text-muted);
+  border-top: 1px solid var(--border); background: white;
+  position: fixed; bottom: 0; width: 100%;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <img src="./logo.png" alt="IBSA" class="header-logo" onerror="this.style.display='none'">
+  <h1>International Bilingual School of Africa</h1>
+  <div class="classe-badge" id="classe-badge">—</div>
+  <p>Documents mis à disposition par les enseignants</p>
+</div>
+
+<div class="container" id="container">
+  <div class="state-box">
+    <div class="icon">⏳</div>
+    <h3>Chargement en cours…</h3>
+    <p>Veuillez patienter quelques instants.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="footer">IBSA &copy; 2026 — Espace réservé aux parents d'élèves</div>
+
+<script>
+// ─── Paramètre URL ───────────────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const CLASSE = (params.get('classe') || '').trim();
+
+document.getElementById('classe-badge').textContent = CLASSE || 'Classe inconnue';
+document.title = CLASSE ? `Documents – ${CLASSE} — IBSA` : 'Espace Parents — IBSA';
+
+// ─── Toast ───────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─── Icône selon type de fichier ─────────────────────────────────────────────
+function fileIcon(name) {
+  const ext = (name || '').split('.').pop().toLowerCase();
+  const map = { pdf:'📕', doc:'📝', docx:'📝', xls:'📗', xlsx:'📗', ppt:'📙', pptx:'📙', jpg:'🖼️', jpeg:'🖼️', png:'🖼️' };
+  return map[ext] || '📄';
+}
+
+function formatSize(bytes) {
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + ' o';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(0) + ' Ko';
+  return (bytes/(1024*1024)).toFixed(1) + ' Mo';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+
+// ─── Téléchargement ──────────────────────────────────────────────────────────
+async function downloadFile(url, name) {
+  showToast('⬇️ Téléchargement de ' + name + '…');
+  try {
+    const resp = await fetch(url);
+    const blob = await resp.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); document.body.removeChild(a); }, 200);
+    showToast('✅ Téléchargement terminé !');
+  } catch (e) {
+    // Fallback : ouvrir dans un nouvel onglet
+    window.open(url, '_blank');
+  }
+}
+
+// ─── Rendu HTML ──────────────────────────────────────────────────────────────
+function renderFiles(seances) {
+  const container = document.getElementById('container');
+
+  // Collecter tous les fichiers avec contexte (matiere, date)
+  const allFiles = [];
+  seances.forEach(s => {
+    if (!s.files || !Array.isArray(s.files)) return;
+    s.files.forEach(f => {
+      if (f.url) allFiles.push({ ...f, matiere: s.matiere, date: s.date });
+    });
+  });
+
+  if (allFiles.length === 0) {
+    container.innerHTML = `
+      <div class="state-box">
+        <div class="icon">📭</div>
+        <h3>Aucun document disponible</h3>
+        <p>Les enseignants n'ont pas encore partagé de fichiers pour la classe <strong>${CLASSE}</strong>.</p>
+      </div>`;
+    return;
+  }
+
+  // Grouper par séance (matiere + date)
+  const groups = {};
+  allFiles.forEach(f => {
+    const key = f.date + '|' + f.matiere;
+    if (!groups[key]) groups[key] = { date: f.date, matiere: f.matiere, files: [] };
+    groups[key].files.push(f);
+  });
+
+  // Trier par date décroissante
+  const sorted = Object.values(groups).sort((a,b) => b.date.localeCompare(a.date));
+
+  let html = `<p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">
+    📎 <strong>${allFiles.length}</strong> document${allFiles.length>1?'s':''} disponible${allFiles.length>1?'s':''} pour la classe <strong>${CLASSE}</strong>
+  </p>`;
+
+  sorted.forEach(g => {
+    html += `<div class="section-date">
+      <div class="section-date-header">
+        <span class="matiere">📚 ${g.matiere}</span>
+        <span class="date">📅 ${formatDate(g.date)}</span>
+      </div>`;
+    g.files.forEach(f => {
+      html += `<div class="file-card">
+        <span class="file-icon">${fileIcon(f.name)}</span>
+        <div class="file-info">
+          <div class="file-name" title="${f.name}">${f.name}</div>
+          <div class="file-meta">${formatSize(f.size)}${f.type?' · '+f.type.split('/').pop().toUpperCase():''}</div>
+        </div>
+        <button class="btn-download" onclick="downloadFile('${f.url}','${f.name.replace(/'/g,"\\'")}')">
+          ⬇️ Télécharger
+        </button>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// ─── Chargement Supabase ─────────────────────────────────────────────────────
+async function loadFiles() {
+  const container = document.getElementById('container');
+
+  if (!CLASSE) {
+    container.innerHTML = `
+      <div class="state-box">
+        <div class="icon">⚠️</div>
+        <h3>Classe non spécifiée</h3>
+        <p>Ce QR code semble incorrect. Veuillez contacter l'école.</p>
+      </div>`;
+    return;
+  }
+
+  const cfg = window.IBSA_CONFIG;
+  if (!cfg || !cfg.SUPABASE_URL || !cfg.SUPABASE_KEY) {
+    container.innerHTML = `
+      <div class="state-box">
+        <div class="icon">⚙️</div>
+        <h3>Configuration manquante</h3>
+        <p>Impossible de se connecter au serveur. Veuillez contacter l'école.</p>
+      </div>`;
+    return;
+  }
+
+  try {
+    const supa = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY);
+    const { data, error } = await supa
+      .from('seances')
+      .select('date, matiere, files')
+      .eq('classe', CLASSE)
+      .not('files', 'is', null)
+      .order('date', { ascending: false });
+
+    if (error) throw error;
+
+    // Filtrer les séances sans fichiers réels
+    const withFiles = (data || []).filter(s => Array.isArray(s.files) && s.files.some(f => f.url));
+    renderFiles(withFiles);
+
+  } catch (e) {
+    console.error('[Parents] Erreur chargement :', e);
+    container.innerHTML = `
+      <div class="state-box">
+        <div class="icon">❌</div>
+        <h3>Erreur de chargement</h3>
+        <p>Impossible de récupérer les documents. Veuillez réessayer ou contacter l'école.</p>
+      </div>`;
+  }
+}
+
+// ─── Démarrage ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', loadFiles);
+</script>
+</body>
+</html>
