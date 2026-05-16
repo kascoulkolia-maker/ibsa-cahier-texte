@@ -1,0 +1,16 @@
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Cache statique pour config.js (permet de modifier sans rebuild complet)
+[[headers]]
+  for = "/config.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
