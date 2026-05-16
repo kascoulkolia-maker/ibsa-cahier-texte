@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Espace Parents — IBSA — Cahier de texte numérique">
+<meta name="theme-color" content="#0D2B55">
+<title>Espace Parents — IBSA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<style>
+:root {
+  --primary: #0D2B55;
+  --primary-light: #1A4480;
+  --accent: #D4930A;
+  --accent-light: #F0B429;
+  --success: #166534;
+  --bg: #F1F5FB;
+  --card: #FFFFFF;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --text-muted: #475569;
+  --shadow: 0 4px 20px rgba(13,43,85,0.10);
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #0d2137 0%, #1a3a5c 50%, #2a5a8c 100%);
+  padding: 24px 20px;
+  text-align: center;
+  color: white;
+}
+.header-logo {
+  width: 80px; height: 80px; border-radius: 50%;
+  border: 3px solid var(--accent); object-fit: contain;
+  background: white; padding: 6px;
+  box-shadow: 0 0 0 3px white, 0 0 0 5px var(--accent);
+  margin-bottom: 14px;
+}
+.header h1 { font-family: 'Playfair Display', serif; font-size: 20px; line-height: 1.3; }
+.header .classe-badge {
+  display: inline-block; margin-top: 10px;
+  background: rgba(212,147,10,0.25); border: 1px solid var(--accent);
+  color: var(--accent-light); padding: 5px 18px; border-radius: 20px;
+  font-size: 15px; font-weight: 700; letter-spacing: 0.5px;
+}
+.header p { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 6px; }
+
+/* CONTAINER */
+.container { max-width: 720px; margin: 0 auto; padding: 24px 16px 80px; }
+
+/* ÉTAT VIDE / LOADING */
+.state-box {
+  text-align: center; padding: 60px 20px;
+  color: var(--text-muted); font-size: 15px;
+}
+.state-box .icon { font-size: 48px; margin-bottom: 14px; }
+.state-box h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; font-family: 'Playfair Display', serif; }
+
+/* SÉANCE CARD */
+.seance-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.seance-header {
+  background: linear-gradient(135deg, #0D2B55 0%, #1B3D6F 100%);
+  color: white;
+  padding: 12px 16px;
+  display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+}
+.seance-header .matiere {
+  font-weight: 700; font-size: 15px;
+}
+.seance-header .meta {
+  font-size: 12px; opacity: 0.8; margin-top: 2px;
+}
+.seance-header .type-badge {
+  font-size: 11px; background: rgba(212,147,10,0.3); border: 1px solid var(--accent-light);
+  color: var(--accent-light); padding: 2px 10px; border-radius: 20px; white-space: nowrap;
+}
+.seance-body { padding: 14px 16px; }
+.seance-field { font-size: 13px; margin-bottom: 8px; line-height: 1.5; }
+.seance-field strong { color: var(--primary); }
+.seance-field.chapitre {
+  font-weight: 700; font-size: 14px; color: var(--primary);
+  padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px;
+}
+.seance-field.travail {
+  background: rgba(212,147,10,0.07); padding: 8px 12px;
+  border-radius: 8px; border-left: 3px solid var(--accent);
+}
+.seance-field.observations { color: var(--text-muted); font-size: 12px; }
+
+/* FICHIERS JOINTS */
+.files-section {
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.files-title {
+  font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;
+}
+.file-row {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(26,58,92,0.04); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px; margin-bottom: 6px;
+}
+.file-icon { font-size: 22px; flex-shrink: 0; }
+.file-info { flex: 1; min-width: 0; }
+.file-name {
+  font-weight: 600; font-size: 13px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.file-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.btn-download {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 14px; border: none; border-radius: 8px;
+  background: var(--primary); color: white;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+  cursor: pointer; flex-shrink: 0;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-download:hover { background: var(--primary-light); }
+.btn-download:active { transform: scale(0.97); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: var(--primary); color: white;
+  padding: 12px 20px; border-radius: 10px;
+  font-size: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  opacity: 0; transition: opacity 0.3s; z-index: 999;
+  max-width: 300px;
+}
+.toast.show { opacity: 1; }
+
+/* FOOTER */
+.footer {
+  text-align: center; padding: 20px;
+  font-size: 12px; color: var(--text-muted);
+  border-top: 1px solid var(--border); background: white;
+  position: fixed; bottom: 0; width: 100%;
+}
+
+@media(max-width:480px){
+  .seance-header { flex-direction: column; }
+  .file-row { flex-wrap: wrap; }
+}
+
+/* ══ IBSA PARENTS — DESIGN REFRESH 2026 ══ */
+
+/* ── Typographie : Inter ── */
+body, .btn-download, button { font-family: 'Inter', system-ui, sans-serif; }
+
+/* ── Palette chaude ── */
+:root {
+  --bg:           #F5F2ED;
+  --border:       #CFC8BD;
+  --border-light: #E3DDD5;
+}
+body { background: var(--bg); }
+
+/* ── Header : plus doux ── */
+.header {
+  background: linear-gradient(160deg, #05101f 0%, #0d2b55 55%, #1a4480 100%);
+}
+
+/* ── Séance cards : header bleu conservé ── */
+.seance-header {
+  background: linear-gradient(135deg, #0D2B55 0%, #1B3D6F 100%) !important;
+  color: white !important;
+  border-bottom: none;
+  padding-left: 16px;
+  position: relative;
+}
+.seance-header::before { display: none; }
+.seance-header .matiere { color: white; }
+.seance-header .meta    { opacity: 0.8; color: white; }
+.seance-header .type-badge {
+  background: rgba(212,147,10,0.3);
+  border-color: rgba(212,147,10,0.6);
+  color: #ffd980;
+}
+
+/* ── Bouton télécharger sans gradient ── */
+.btn-download {
+  background: var(--primary);
+  box-shadow: none;
+}
+.btn-download:hover { background: var(--primary-light); transform: none; }
+
+/* ── Footer chaud ── */
+.footer { background: var(--bg); border-top: 1px solid var(--border-light); }
+
+/* ── SVG icons ── */
+.ibsa-icon { display: inline-block; vertical-align: -2px; width: 14px; height: 14px; flex-shrink: 0; }
+.ibsa-icon svg { display: block; }
+.icon-replaced { display: contents; }
+</style>
+
+<style id="ibsa-redesign-parents">
+/* ═══════════════════════════════════════════
+   IBSA PARENTS — REFONTE DRAMATIQUE 2026
+   ═══════════════════════════════════════════ */
+
+/* ── Header éditorial au lieu du centré générique ── */
+.header {
+  background: linear-gradient(170deg, #020C1B 0%, #071A36 45%, #0D2B55 100%);
+  padding: 36px 28px 28px;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Motif africain visible sur le header */
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 4 L56 30 L30 56 L4 30 Z' fill='none' stroke='%23D4930A' stroke-width='1.2' opacity='0.14'/%3E%3Cpath d='M30 17 L43 30 L30 43 L17 30 Z' fill='none' stroke='%23D4930A' stroke-width='0.7' opacity='0.09'/%3E%3Ccircle cx='30' cy='30' r='2' fill='%23D4930A' opacity='0.12'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 1;
+}
+
+/* Ligne dorée en bas du header */
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #D4930A 20%, #F0B429 50%, #D4930A 80%, transparent);
+}
+
+/* Logo : fond blanc garanti + carré au lieu de rond */
+.header-logo {
+  border-radius: 6px;
+  width: 72px; height: 72px;
+  margin-bottom: 16px;
+  background: white !important;
+  padding: 7px !important;
+  object-fit: contain;
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #D4930A;
+}
+
+/* Titre : aligné gauche */
+.header h1 {
+  font-size: 22px;
+  text-align: left;
+  font-family: 'Playfair Display', serif;
+}
+
+/* Badge classe */
+.classe-badge {
+  display: inline-block;
+  margin-top: 10px;
+  background: rgba(212,147,10,0.15);
+  border: 1.5px solid #D4930A;
+  color: #F0B429;
+  padding: 5px 20px;
+  border-radius: 3px; /* moins arrondi */
+  font-size: 15px; font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.header p {
+  text-align: left;
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.3px;
+}
+
+/* ── Conteneur : fond chaud ── */
+.container { max-width: 720px; }
+
+/* ── Séance cards : style plus éditorial ── */
+.seance-card {
+  border-radius: 4px;
+  border: 1px solid #E3DDD5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-bottom: 14px;
+}
+
+.seance-body {
+  background: #FEFCFA;
+}
+
+/* Chapitre : trait gauche distinctif */
+.seance-field.chapitre {
+  border-left: 3px solid var(--primary);
+  padding-left: 10px;
+  border-bottom: none;
+  margin-bottom: 12px;
+}
+
+/* Travail à faire : style différent */
+.seance-field.travail {
+  background: rgba(212,147,10,0.06);
+  border-left: 3px solid #D4930A;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Fichier row */
+.file-row {
+  border-radius: 4px;
+  background: #F5F2ED;
+}
+
+/* Footer */
+.footer {
+  background: #F5F2ED;
+  border-top: 2px solid #E3DDD5;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .header { padding: 28px 16px 22px; }
+  .header h1 { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <img src="./logo.png" alt="IBSA" class="header-logo" onerror="this.style.display='none'">
+  <h1>International Bilingual School of Africa</h1>
+  <div class="classe-badge" id="classe-badge">—</div>
+  <p>Cahier de texte numérique — Espace Parents</p>
+</div>
+
+<div class="container" id="container">
+  <div class="state-box">
+    <div class="icon">⏳</div>
+    <h3>Chargement en cours…</h3>
+    <p>Veuillez patienter quelques instants.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="footer">IBSA &copy; 2026 — Espace réservé aux parents d'élèves</div>
+
+<script>
+// ─── Paramètre URL ────────────────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const CLASSE = (params.get('classe') || '').trim();
+
+document.getElementById('classe-badge').textContent = CLASSE || 'Classe inconnue';
+document.title = CLASSE ? `Séances – ${CLASSE} — IBSA` : 'Espace Parents — IBSA';
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─── Utilitaires ─────────────────────────────────────────────────────────────
+function fileIcon(name) {
+  const ext = (name || '').split('.').pop().toLowerCase();
+  const map = { pdf:'📕', doc:'📝', docx:'📝', xls:'📗', xlsx:'📗', ppt:'📙', pptx:'📙', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', mp4:'🎬', mp3:'🎵' };
+  return map[ext] || '📄';
+}
+
+function formatSize(bytes) {
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + ' o';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' Ko';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' Mo';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── Construction URL publique depuis un chemin de stockage ──────────────────
+function buildPublicUrl(f) {
+  // Priorité : url déjà stockée lors de l'upload
+  if (f.url && f.url.startsWith('http')) return f.url;
+  // Fallback : reconstruire depuis le chemin et la config Supabase
+  if (f.path && window.IBSA_CONFIG && window.IBSA_CONFIG.SUPABASE_URL) {
+    return window.IBSA_CONFIG.SUPABASE_URL + '/storage/v1/object/public/seances-files/' + f.path;
+  }
+  return '';
+}
+
+// ─── Téléchargement ───────────────────────────────────────────────────────────
+async function downloadFile(url, name) {
+  if (!url || url === 'undefined') {
+    showToast('⚠️ Lien du fichier indisponible.');
+    return;
+  }
+  showToast('⬇️ Téléchargement de ' + name + '…');
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      // Le bucket est peut-être privé : ouvrir directement dans le navigateur
+      window.open(url, '_blank');
+      return;
+    }
+    const blob = await resp.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); document.body.removeChild(a); }, 200);
+    showToast('✅ Téléchargement terminé !');
+  } catch (e) {
+    // Erreur réseau ou CORS : ouvrir dans un nouvel onglet en fallback
+    window.open(url, '_blank');
+  }
+}
+
+// ─── Rendu des séances ────────────────────────────────────────────────────────
+function renderSeances(seances) {
+  const container = document.getElementById('container');
+
+  if (!seances || seances.length === 0) {
+    container.innerHTML = `
+      <div class="state-box">
+        <div class="icon">📭</div>
+        <h3>Aucune séance disponible</h3>
+        <p>Les enseignants n'ont pas encore enregistré de séances pour la classe <strong>${escHtml(CLASSE)}</strong>.</p>
+        <p style="font-size:12px;margin-top:10px;color:var(--text-muted)">Si vous pensez qu'il y a une erreur, contactez l'école.</p>
+      </div>`;
+    return;
+  }
+
+  let html = `<p style="font-size:13px;color:var(--text-muted);margin-bottom:20px">
+    📋 <strong>${seances.length}</strong> séance${seances.length > 1 ? 's' : ''} enregistrée${seances.length > 1 ? 's' : ''} pour la classe <strong>${escHtml(CLASSE)}</strong>
+  </p>`;
+
+  seances.forEach(s => {
+
+    // Fichiers joints
+    const files = Array.isArray(s.files) ? s.files.filter(f => f.url || f.path) : [];
+    let filesHtml = '';
+    if (files.length > 0) {
+      filesHtml = `<div class="files-section">
+        <div class="files-title">📎 ${files.length} pièce(s) jointe(s)</div>`;
+      files.forEach(f => {
+        const accessUrl = buildPublicUrl(f);
+        const fname = f.name || 'fichier';
+        filesHtml += `<div class="file-row">
+          <span class="file-icon">${fileIcon(fname)}</span>
+          <div class="file-info">
+            <div class="file-name" title="${escHtml(fname)}">${escHtml(fname)}</div>
+            <div class="file-meta">${formatSize(f.size)}${f.type ? ' · ' + f.type.split('/').pop().toUpperCase() : ''}</div>
+          </div>
+          ${accessUrl
+            ? `<button class="btn-download" onclick="downloadFile('${accessUrl.replace(/'/g,"\\'")}','${fname.replace(/'/g,"\\'")}')">⬇️ Télécharger</button>`
+            : `<span style="font-size:11px;color:#999;font-style:italic">Lien indisponible</span>`
+          }
+        </div>`;
+      });
+      filesHtml += `</div>`;
+    }
+
+    html += `<div class="seance-card">
+      <div class="seance-header">
+        <div>
+          <div class="matiere">📚 ${escHtml(s.matiere)}</div>
+          <div class="meta">📅 ${formatDate(s.date)}${s.heure_debut ? ' à ' + escHtml(s.heure_debut) : ''}${s.heure_fin ? ' – ' + escHtml(s.heure_fin) : ''}</div>
+        </div>
+      </div>
+      <div class="seance-body">
+        ${s.chapitre ? `<div class="seance-field chapitre">📖 ${escHtml(s.chapitre)}</div>` : ''}
+        ${s.contenu ? `<div class="seance-field"><strong>📝 Résumé du cours :</strong><br><span style="color:var(--text-muted)">${escHtml(s.contenu)}</span></div>` : ''}
+        ${s.devoirs ? `<div class="seance-field travail"><strong>✏️ Travail à faire :</strong> ${escHtml(s.devoirs)}</div>` : ''}
+        ${filesHtml}
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// ─── Chargement Supabase ──────────────────────────────────────────────────────
+async function loadSeances() {
+  const container = document.getElementById('container');
+
+  if (!CLASSE) {
+    container.innerHTML = `
+      <div class="state-box">
+        <div class="icon">⚠️</div>
+        <h3>Classe non spécifiée</h3>
+        <p>Ce QR code semble incorrect. Veuillez contacter l'école.</p>
+      </div>`;
+    return;
+  }
+
+  const cfg = window.IBSA_CONFIG;
+  if (!cfg || !cfg.SUPABASE_URL || !cfg.SUPABASE_KEY) {
+    container.innerHTML = `
+      <div class="state-box">
+        <div class="icon">⚙️</div>
+        <h3>Configuration manquante</h3>
+        <p>Impossible de se connecter au serveur. Veuillez contacter l'école.</p>
+      </div>`;
+    return;
+  }
+
+  try {
+    const supa = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY);
+
+    const { data, error } = await supa
+      .from('seances_parents')
+      .select('date, classe, matiere, chapitre, contenu, devoirs, heure_debut, heure_fin, files')
+      .eq('classe', CLASSE)
+      .order('date', { ascending: false });
+
+    if (error) throw error;
+
+    const seances = (data || []).map(s => ({
+      ...s,
+      files: Array.isArray(s.files) ? s.files : []
+    }));
+
+    renderSeances(seances);
+
+  } catch (e) {
+    console.error('[Parents] Erreur chargement :', e);
+    container.innerHTML = `
+      <div class="state-box">
+        <div class="icon">❌</div>
+        <h3>Erreur de chargement</h3>
+        <p>Impossible de récupérer les séances. Veuillez réessayer ou contacter l'école.</p>
+        <p style="font-size:11px;margin-top:8px;color:var(--text-muted)">${escHtml(e.message || '')}</p>
+      </div>`;
+  }
+}
+
+// ─── Démarrage ────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', loadSeances);
+</script>
+<script>
+/* ── IBSA Icon System (Parents) ── */
+(function () {
+  'use strict';
+  function ic(d) {
+    return '<svg class="ibsa-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="14" height="14">' + d + '</svg>';
+  }
+  var M = {
+    '📚': ic('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>'),
+    '📋': ic('<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>'),
+    '📅': ic('<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>'),
+    '📖': ic('<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>'),
+    '📝': ic('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'),
+    '✏️': ic('<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>'),
+    '📎': ic('<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>'),
+    '📄': ic('<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/>'),
+    '⬇️': ic('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>'),
+    '✅': ic('<polyline points="20 6 9 17 4 12"/>'),
+    '⚠️': ic('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'),
+    '❌': ic('<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'),
+    '⏳': ic('<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>'),
+    '📭': ic('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.9 15.18 19.79 19.79 0 0 1 1.83 6.5 2 2 0 0 1 3.81 4h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 11.1a16 16 0 0 0 6 6z"/>'),
+    '⚙️': ic('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
+  };
+
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function processTextNode(node) {
+    var text = node.textContent;
+    var parts = [text], changed = false;
+    var emoji, newParts, i, j, p, segs;
+    for (emoji in M) {
+      newParts = [];
+      for (i = 0; i < parts.length; i++) {
+        p = parts[i];
+        if (typeof p === 'string' && p.indexOf(emoji) !== -1) {
+          segs = p.split(emoji);
+          for (j = 0; j < segs.length; j++) {
+            newParts.push(segs[j]);
+            if (j < segs.length - 1) newParts.push({ h: M[emoji] });
+          }
+          changed = true;
+        } else { newParts.push(p); }
+      }
+      parts = newParts;
+    }
+    if (!changed) return;
+    var html = parts.map(function(p) { return typeof p === 'string' ? esc(p) : p.h; }).join('');
+    var span = document.createElement('span');
+    span.className = 'icon-replaced';
+    span.innerHTML = html;
+    if (node.parentNode) node.parentNode.replaceChild(span, node);
+  }
+
+  var DONE = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
+
+  function scanEl(el) {
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+    var nodes = [], n;
+    while ((n = walker.nextNode())) {
+      if (!DONE || !DONE.has(n)) nodes.push(n);
+    }
+    nodes.forEach(function(node) {
+      if (DONE) DONE.add(node);
+      processTextNode(node);
+    });
+  }
+
+  function run() {
+    document.querySelectorAll('.seance-header,.seance-body,.state-box,.files-section,.btn-download,.toast,.header').forEach(scanEl);
+  }
+
+  var sch = false;
+  function schedule() {
+    if (sch) return; sch = true;
+    setTimeout(function() { run(); sch = false; }, 90);
+  }
+
+  if (document.readyState !== 'loading') { run(); }
+  else { document.addEventListener('DOMContentLoaded', run); }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    new MutationObserver(function(muts) {
+      if (muts.some(function(m) { return m.addedNodes.length > 0; })) schedule();
+    }).observe(document.body, { childList: true, subtree: true });
+  });
+}());
+</script>
+</body>
+</html>
